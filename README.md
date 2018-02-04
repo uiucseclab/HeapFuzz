@@ -1,2 +1,2 @@
 # 460_project
-Coverage based buzzer for CS460
+Coverage based fuzzer for CS460
