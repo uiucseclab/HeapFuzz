@@ -11,29 +11,25 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <iostream>
+#include <memory>
+#include <utility>
 #include "instrument.hpp"
 #include "snapshot.hpp"
-#include <utility>
-#include <memory>
 
-//TODO: rename/refactor, documentation, commandline arg, write tests
-//TODO: more generic makefile
-//TODO: better error checking
+// TODO: rename/refactor, documentation, commandline arg, write tests
+// TODO: more generic makefile
+// TODO: better error checking
 
 int const ignored_arg = 0;
 static const void *no_continue_signal = 0;
 
-
-//Input:
-//Output: 
+// Input:
+// Output:
 void start_child(const char *path, char *const argv[]) {
   // start process
   ptrace(PTRACE_TRACEME, 0, 0, 0);
   execv(path, argv);
 }
-
-
-
 
 //
 void child_continue(pid_t child, std::unique_ptr<breakpoint> bp) {
@@ -47,27 +43,25 @@ void child_continue(pid_t child, std::unique_ptr<breakpoint> bp) {
     if (WIFSTOPPED(status) && WSTOPSIG(status) == SIGTRAP) {
       struct user_regs_struct regs;
 
-      generate_snapshot(child);//TODO: implement this
+      generate_snapshot(child);  // TODO: implement this
       breakpoint_remove(child, std::move(bp));
 
       ptrace(PTRACE_GETREGS, pid, ignored_arg, &regs);
       regs.rip -= 1;
       ptrace(PTRACE_SETREGS, pid, ignored_arg, &regs);
-      
 
       ptrace(PTRACE_CONT, pid, ignored_arg, no_continue_signal);
-    } else if (WIFEXITED(status)) {//process stopped regularly
+    } else if (WIFEXITED(status)) {  // process stopped regularly
       return;
     } else {
-      fprintf(stderr, "Child Unexpectedly stopped: 0x%x\n",
-              status);
+      fprintf(stderr, "Child Unexpectedly stopped: 0x%x\n", status);
       abort();
     }
   }
 }
 
-//Input: pid of child
-//Output: 
+// Input: pid of child
+// Output:
 //
 static void attach_to_child(pid_t pid) {
   int status;
@@ -81,9 +75,8 @@ static void attach_to_child(pid_t pid) {
   }
 }
 
-
-//Input: Path to child, args to pass to child
-//Output: pid of child
+// Input: Path to child, args to pass to child
+// Output: pid of child
 pid_t child_exec(const char *path, char *const argv[]) {
   pid_t result;
 
@@ -104,14 +97,16 @@ pid_t child_exec(const char *path, char *const argv[]) {
   return result;
 }
 
-
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   std::cerr << argc << argv << std::endl;
-  char* child_args[1] = {0};//arguments to child process
-  auto child_pid = child_exec("./test/basic/hello_world", child_args);//hard coded name
-  long main_address = 0x400526;  // hard-coded for now, TODO: extract main address, or make commandline arg
- 
-  std::unique_ptr<breakpoint> bp = child_set_breakpoint(child_pid,(char*)main_address);  
+  char *child_args[1] = {0};  // arguments to child process
+  auto child_pid =
+      child_exec("./test/basic/hello_world", child_args);  // hard coded name
+  long main_address = 0x400526;  // hard-coded for now, TODO: extract main
+                                 // address, or make commandline arg
+
+  std::unique_ptr<breakpoint> bp =
+      child_set_breakpoint(child_pid, (char *)main_address);
   dump_rip(child_pid);
-  child_continue(child_pid,std::move(bp));
+  child_continue(child_pid, std::move(bp));
 }

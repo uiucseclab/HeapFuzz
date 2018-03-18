@@ -1,7 +1,6 @@
 #include "instrument.hpp"
 
-
-//wrapper around ptrace for easier writes to memory
+// wrapper around ptrace for easier writes to memory
 void ptrace_util_poke_text(pid_t pid, unsigned long target_address,
                            unsigned long data) {
   int result =
@@ -12,14 +11,11 @@ void ptrace_util_poke_text(pid_t pid, unsigned long target_address,
   }
 }
 
-
-void breakpoint_remove(pid_t child, std::unique_ptr<breakpoint> bp)
-{
+void breakpoint_remove(pid_t child, std::unique_ptr<breakpoint> bp) {
   pid_t child_pid = child;
 
   ptrace_util_poke_text(child_pid, bp->target_address,
                         bp->original_breakpoint_word);
-
 }
 
 void dump_rip(pid_t child_pid) {
@@ -28,8 +24,8 @@ void dump_rip(pid_t child_pid) {
   printf("0x%llx\n", regs.rip);
 }
 
-std::unique_ptr<breakpoint> breakpoint_set(pid_t child, std::unique_ptr<breakpoint> bp)
-{
+std::unique_ptr<breakpoint> breakpoint_set(pid_t child,
+                                           std::unique_ptr<breakpoint> bp) {
   const uintptr_t int3_opcode = 0xCC;
   auto pid = child;
   auto target_offset = bp->target_address - bp->aligned_address;
@@ -42,16 +38,13 @@ std::unique_ptr<breakpoint> breakpoint_set(pid_t child, std::unique_ptr<breakpoi
   return bp;
 }
 
-
-
-std::unique_ptr<breakpoint> child_set_breakpoint(pid_t child,
-                                               char *location)
-{
+std::unique_ptr<breakpoint> child_set_breakpoint(pid_t child, char *location) {
   const uintptr_t target_address = (uintptr_t)location;
   auto aligned_address = target_address & ~(0x7UL);
-  
-  auto original_breakpoint_word = ptrace(PTRACE_PEEKTEXT, child, (void *)target_address, 0);
-  std::unique_ptr<breakpoint> bp = std::make_unique<breakpoint>(); 
+
+  auto original_breakpoint_word =
+      ptrace(PTRACE_PEEKTEXT, child, (void *)target_address, 0);
+  std::unique_ptr<breakpoint> bp = std::make_unique<breakpoint>();
 
   bp->target_address = target_address;
   bp->aligned_address = aligned_address;
