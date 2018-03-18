@@ -36,8 +36,8 @@ void start_child(const char *path, char *const argv[]) {
 
 
 //
-void child_continue(pid_t inferior, std::unique_ptr<breakpoint> bp) {
-  auto pid = inferior;
+void child_continue(pid_t child, std::unique_ptr<breakpoint> bp) {
+  auto pid = child;
 
   ptrace(PTRACE_CONT, pid, ignored_arg, no_continue_signal);
   while (1) {
@@ -47,8 +47,8 @@ void child_continue(pid_t inferior, std::unique_ptr<breakpoint> bp) {
     if (WIFSTOPPED(status) && WSTOPSIG(status) == SIGTRAP) {
       struct user_regs_struct regs;
 
-      generate_snapshot();//TODO: implement this
-      breakpoint_remove(inferior, std::move(bp));
+      generate_snapshot(child);//TODO: implement this
+      breakpoint_remove(child, std::move(bp));
 
       ptrace(PTRACE_GETREGS, pid, ignored_arg, &regs);
       regs.rip -= 1;
@@ -76,7 +76,7 @@ static void attach_to_child(pid_t pid) {
   if (WIFSTOPPED(status) && WSTOPSIG(status) == SIGTRAP) {
     return;
   } else {
-    fprintf(stderr, "Unexpected status for inferior %d when attaching\n", pid);
+    fprintf(stderr, "Unexpected status for child %d when attaching\n", pid);
     abort();
   }
 }

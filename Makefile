@@ -2,7 +2,9 @@ CXX = clang++
 LD = clang++
 
 #CXXFLAGS = CXXFLAGS = -std=c++1y -stdlib=libc++ -c -g -O0 -Wall -Wextra -Werror -pedantic
-LDFLAGS = -std=c++17 -stdlib=libc++  
+#LDFLAGS = -std=c++17 -stdlib=libc++  -ldl
+LDFLAGS = 
+
 
 BASE_DIR = $(shell pwd)
 BIN_DIR = $(BASE_DIR)/bin
@@ -21,7 +23,7 @@ snapshot.o: $(SRC_DIR)/snapshot.cpp $(SRC_DIR)/snapshot.hpp
 	$(CXX) $(CXXFLAGS) -c $(SRC_DIR)/snapshot.cpp -o $(OBJ_DIR)/snapshot.o
 
 all: main.o instrument.o snapshot.o
-	$(LD) $(OBJ_DIR)/main.o $(OBJ_DIR)/Instrument.o $(OBJ_DIR)/snapshot.o -o $(BIN_DIR)/fuzzer
+	$(LD) $(LDFLAGS) $(OBJ_DIR)/main.o $(OBJ_DIR)/Instrument.o $(OBJ_DIR)/snapshot.o -o $(BIN_DIR)/fuzzer
 
 
 .PHONY: clean
