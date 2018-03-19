@@ -1,5 +1,8 @@
 #include "instrument.hpp"
 
+std::unique_ptr<breakpoint> breakpoint_set(pid_t inferior,
+                                           std::unique_ptr<breakpoint> bp);
+
 // wrapper around ptrace for easier writes to memory
 void ptrace_util_poke_text(pid_t pid, unsigned long target_address,
                            unsigned long data) {

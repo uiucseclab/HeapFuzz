@@ -28,8 +28,7 @@ typedef struct breakpoint {
 void ptrace_util_poke_text(pid_t pid, unsigned long target_address,
                            unsigned long data);
 void breakpoint_remove(pid_t inferior, std::unique_ptr<breakpoint> bp);
-std::unique_ptr<breakpoint> breakpoint_set(pid_t inferior,
-                                           std::unique_ptr<breakpoint> bp);
+
 std::unique_ptr<breakpoint> child_set_breakpoint(pid_t inferior,
                                                  char *location);
 void dump_rip(pid_t child_pid);

@@ -1,6 +1,17 @@
 #include "snapshot.hpp"
 #include <fstream>
 
+typedef struct page_link {
+  unsigned long start;
+  unsigned long end;
+  bool readable;
+  bool writeable;
+  bool executable;
+  unsigned long offset;
+  std::string pathname;
+
+} page_link;
+
 page_link parse_link(std::string line) {
   // std::cerr << line << std::endl;
   page_link plink = {};
@@ -54,13 +65,35 @@ std::vector<page_link> create_page_map(pid_t child) {
   return pmap;
 }
 
-// void save_snapshot(pid_t child, std::vector<page_link> pmap){}
+void save_page(page_link page, FILE* snapshot_file) {
+  if (page.readable && page.writeable) {
+    unsigned long page_size = page.end - page.start;
+    // unsigned long start = page.start;
+
+    char* page_buf = (char*)page.start;
+    std::cout << page.readable << page.writeable << page.executable
+              << std::endl;
+    // segfault
+    // std::cout << page_buf[0]<< std::endl;
+
+    fwrite(page_buf, sizeof(char), page_size, snapshot_file);
+    // unsigned long offset = page.offset;
+  } else {
+    std::cout << page.readable << page.writeable << page.executable
+              << std::endl;
+  }
+}
 
 void generate_snapshot(pid_t child) {
   std::cout << "placeholder" << std::endl;
+  // char buf[] = {'l','o','l'};
   auto pmap = create_page_map(child);
   // memory map writeable snapshot file
   // write each writeable page while maintaining offsets in struct
+  auto* snapshot_file = fopen("test.snap", "wb");
 
-  // snaphsot_mmap = mmap (0, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
+  // fwrite(buf,sizeof(char),sizeof(buf),snaphsot_file);
+  save_page(pmap[2], snapshot_file);
+  fclose(snapshot_file);
+  // snaphsot_file = mmap (0, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
 }
