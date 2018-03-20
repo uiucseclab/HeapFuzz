@@ -1,3 +1,6 @@
+#ifndef SNAPSHOT_H
+#define SNAPSHOT_H
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,3 +13,5 @@ typedef struct state {
 } state;
 */
 void generate_snapshot(pid_t child);
+
+#endif //SNAPSHOT_H

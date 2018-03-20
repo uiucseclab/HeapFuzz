@@ -1,9 +1,23 @@
 #include "instrument.hpp"
+#include <assert.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/ptrace.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/user.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <iostream>
 
 std::unique_ptr<breakpoint> breakpoint_set(pid_t inferior,
                                            std::unique_ptr<breakpoint> bp);
 
 // wrapper around ptrace for easier writes to memory
+//data is the thing we are writing
 void ptrace_util_poke_text(pid_t pid, unsigned long target_address,
                            unsigned long data) {
   int result =
@@ -14,6 +28,7 @@ void ptrace_util_poke_text(pid_t pid, unsigned long target_address,
   }
 }
 
+//
 void breakpoint_remove(pid_t child, std::unique_ptr<breakpoint> bp) {
   pid_t child_pid = child;
 

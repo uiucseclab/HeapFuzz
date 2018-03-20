@@ -12,6 +12,7 @@ typedef struct page_link {
 
 } page_link;
 
+//parses a single line from /rpoc/id/maps
 page_link parse_link(std::string line) {
   // std::cerr << line << std::endl;
   page_link plink = {};
@@ -53,7 +54,11 @@ page_link parse_link(std::string line) {
   return plink;
 }
 
+//return vector of page_links denoting the pages of the child process
 std::vector<page_link> create_page_map(pid_t child) {
+  //I literally parse the text /proc/id/maps to get page details
+  //I know this is janky, forgive me
+  //its actually pretty consistent, just not portable
   auto filename = "/proc/" + std::to_string(child) + "/maps";
   std::ifstream link_file(filename);
   std::string line;
@@ -65,6 +70,8 @@ std::vector<page_link> create_page_map(pid_t child) {
   return pmap;
 }
 
+//save a single page for the snapshot
+//TODO: finish this
 void save_page(page_link page, FILE* snapshot_file) {
   if (page.readable && page.writeable) {
     unsigned long page_size = page.end - page.start;
