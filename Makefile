@@ -11,7 +11,7 @@ BIN_DIR = $(BASE_DIR)/bin
 SRC_DIR = $(BASE_DIR)/src
 OBJ_DIR = $(BASE_DIR)/obj
 
-CXXFLAGS = -Wall -Wextra -Werror -pedantic -std=c++17 -g3
+CXXFLAGS = -Wall -Wextra -Werror -pedantic -std=c++1z -g3
 
 main.o: $(SRC_DIR)/main.cpp
 	$(CXX) $(CXXFLAGS) -c $(SRC_DIR)/main.cpp -o obj/main.o -o $(OBJ_DIR)/main.o
