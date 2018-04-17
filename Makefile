@@ -26,10 +26,7 @@ exec.o: $(SRC_DIR)/exec.cpp $(SRC_DIR)/exec.hpp
 	$(CXX) $(CXXFLAGS) -c $(SRC_DIR)/exec.cpp -o $(OBJ_DIR)/exec.o
 
 all: main.o instrument.o snapshot.o exec.o
-	$(LD) $(LDFLAGS) $(OBJ_DIR)/main.o $(OBJ_DIR)/Instrument.o $(OBJ_DIR)/snapshot.o $(OBJ_DIR)/exec.o -o $(BIN_DIR)/fuzzer
-
-
-
+	$(LD) $(LDFLAGS) $(OBJ_DIR)/main.o $(OBJ_DIR)/instrument.o $(OBJ_DIR)/snapshot.o $(OBJ_DIR)/exec.o -o $(BIN_DIR)/fuzzer
 
 
 

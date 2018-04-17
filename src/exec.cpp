@@ -13,12 +13,11 @@
 int const ignored_arg = 0;
 static const void *no_continue_signal = 0;
 
-
-
 // Start child process
 void start_child(std::string path, char *const argv[]) {
   // start process
-  ptrace(PTRACE_TRACEME, 0, 0, 0);
+  // ptrace(PTRACE_TRACEME, 0, 0, 0);
+  // we need the shimmed child here
   execv(path.c_str(), argv);
 }
 
@@ -57,16 +56,10 @@ void child_finish(pid_t child, std::unique_ptr<breakpoint> bp) {
 // Input: pid of child
 // Output:
 //wait for child, to pass control back to parent process
-static void attach_to_child(pid_t pid) {
-  int status;
-  waitpid(pid, &status, 0);
+static void close_parent_pipes() {
+  close(server_pipe[0]);
+  close(fuzzer_pipe[1]);
 
-  if (WIFSTOPPED(status) && WSTOPSIG(status) == SIGTRAP) {
-    return;
-  } else {
-    fprintf(stderr, "Unexpected status for child %d when attaching\n", pid);
-    abort();
-  }
 }
 
 // Input: Path to child, args to pass to child
@@ -85,10 +78,28 @@ pid_t child_exec(const std::string path, char *const argv[]) {
       case -1:  // error
         break;
       default:  // parent
-        attach_to_child(result);
+        close_parent_pipes();
         break;
     }
   } while (result == -1 && errno == EAGAIN);
 
   return result;
 }
+
+void prepare_fork_server(){
+  pipe(server_pipe);
+  pipe(fuzzer_pipe);
+
+  //TODO: do we need to set FD_CLOEXEC on the other ends to not have to close them 
+  // in the server?
+  auto read_end = fcntl(server_pipe[0], F_DUPFD, 198); //fork server reading end at 198
+  auto write_end = fcntl(fuzzer_pipe[1], F_DUPFD, 199); //fork server writing end at 199
+
+  //Close the old fds and replaced them with the duped fds
+  close(server_pipe[0]);
+  close(fuzzer_pipe[1]);
+  server_pipe[0] = read_end;
+  fuzzer_pipe[1] = write_end;
+}
+
+      
