@@ -3,8 +3,6 @@
 #include <utility>
 #include <unistd.h>
 
-#include "instrument.hpp"
-#include "snapshot.hpp"
 #include "exec.hpp"
 
 // TODO: write tests
@@ -46,8 +44,7 @@ void run(config conf) {
   //run child until termination
   std::cout << "Grandchild exited with status: " << status << std::endl;
 
-// this was a snapshot thing
-//  child_finish(child_pid, std::move(bp));
+
 }
 
 

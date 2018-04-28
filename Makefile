@@ -19,23 +19,17 @@ CFLAGS = -Wall -Wextra -g
 main.o: $(SRC_DIR)/main.cpp
 	$(CXX) $(CXXFLAGS) -c $(SRC_DIR)/main.cpp -o obj/main.o -o $(OBJ_DIR)/main.o
 
-instrument.o: $(SRC_DIR)/instrument.cpp $(SRC_DIR)/instrument.hpp 
-	$(CXX) $(CXXFLAGS) -c $(SRC_DIR)/instrument.cpp -o $(OBJ_DIR)/instrument.o
-
-snapshot.o: $(SRC_DIR)/snapshot.cpp $(SRC_DIR)/snapshot.hpp 
-	$(CXX) $(CXXFLAGS) -c $(SRC_DIR)/snapshot.cpp -o $(OBJ_DIR)/snapshot.o
-
 exec.o: $(SRC_DIR)/exec.cpp $(SRC_DIR)/exec.hpp 
 	$(CXX) $(CXXFLAGS) -c $(SRC_DIR)/exec.cpp -o $(OBJ_DIR)/exec.o
 
-all: main.o instrument.o snapshot.o exec.o
-	$(LD) $(LDFLAGS) $(OBJ_DIR)/main.o $(OBJ_DIR)/instrument.o $(OBJ_DIR)/snapshot.o $(OBJ_DIR)/exec.o -o $(BIN_DIR)/fuzzer
+all: main.o exec.o
+	$(LD) $(LDFLAGS) $(OBJ_DIR)/main.o $(OBJ_DIR)/exec.o -o $(BIN_DIR)/fuzzer
 
 shim_test.o: $(TEST_DIR)/basic/shim_test.c
 	$(C) $(CFLAGS) -c $(TEST_DIR)/basic/shim_test.c -o $(OBJ_DIR)/shim_test.o
 shim_test: shim_test.o
 	$(LD) $(LDFLAGS) $(OBJ_DIR)/shim_test.o -o $(TEST_DIR)/basic/shim_test
-	
+
 
 .PHONY: clean
 clean:
