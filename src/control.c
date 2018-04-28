@@ -4,8 +4,6 @@
 #include <dlfcn.h>
 
 
-//Make sure to compile to .so
-//gcc -shared -o control.so -fPIC control.c
 
 static void* (*real_malloc)(size_t)=NULL;
 
