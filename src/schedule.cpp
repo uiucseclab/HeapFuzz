@@ -121,7 +121,7 @@ int rateTrace(trace myTrace){
   		}
   	}
 	
-	return 1;
+	return rating;
 }
 
 int main(){
@@ -145,13 +145,23 @@ int main(){
 	scheduler.push(testStr);
 
 	//will eventually be a while !scheduler.empty()
-	for (auto i = 0; i < 10; i++)
+	/*for (auto i = 0; i < 10; i++)
 	{
 		//str = scheduler.pop()
 		//trace = program.run(str)
 		auto val = rateTrace(dummy_trace);
 		//auto val = rateTrace(trace);
 		//schedule(val,str);
+	}*/
+
+	while(!scheduler.empty())
+	{
+		std::string lol = scheduler.front();
+		scheduler.pop();
+		auto val = rateTrace(dummy_trace);
+		if(val > 5){
+			schedule(val, lol);
+		}
 	}
 
 	auto my_map = malloc_map;
@@ -161,7 +171,7 @@ int main(){
 			std::cout << "Error detected \n"; 
 	}
 
-
+	return 0;
 }
 
 

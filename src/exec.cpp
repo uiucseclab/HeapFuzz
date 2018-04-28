@@ -8,6 +8,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <iostream>
+#include <vector>
+#include <string.h>
 
 
 // Start child process
@@ -15,7 +17,20 @@ void start_child(std::string path, char *const argv[]) {
   // start process
   // ptrace(PTRACE_TRACEME, 0, 0, 0);
   // we need the shimmed child here
-  execv(path.c_str(), argv);
+
+  std::string str = "LD_PRELOAD=./control.so";
+  char *cstr = new char[str.length() + 1];
+  strcpy(cstr, str.c_str());
+  // do stuff
+  //delete [] cstr;
+
+
+  //std::vector<char> control_path(str.c_str(), str.c_str() + str.size() + 1);
+  //char* control_path = "LD_PRELOAD=./control.so".c_str();
+  char* envp[] = {cstr, NULL};
+  execve(path.c_str(), argv,envp);
+  perror ("Error when executing child: ");
+
 }
 
 
