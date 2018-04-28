@@ -11,8 +11,6 @@
 #define READ_FD 198
 
 
-//Make sure to compile to .so
-//gcc -shared -o control.so -fPIC control.c
 
 static void* (*real_malloc)(size_t)=NULL;
 static void* (*real_main)(int, char**)=NULL;

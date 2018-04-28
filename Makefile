@@ -22,14 +22,19 @@ main.o: $(SRC_DIR)/main.cpp
 exec.o: $(SRC_DIR)/exec.cpp $(SRC_DIR)/exec.hpp 
 	$(CXX) $(CXXFLAGS) -c $(SRC_DIR)/exec.cpp -o $(OBJ_DIR)/exec.o
 
-all: main.o exec.o
+
+control.so: $(SRC_DIR)/control.c
+	$(C) $(CFLAGS) -shared -o $(BIN_DIR)/control.so -fPIC $(SRC_DIR)/control.c
+
+
+all: main.o exec.o control.so
 	$(LD) $(LDFLAGS) $(OBJ_DIR)/main.o $(OBJ_DIR)/exec.o -o $(BIN_DIR)/fuzzer
 
 shim_test.o: $(TEST_DIR)/basic/shim_test.c
 	$(C) $(CFLAGS) -c $(TEST_DIR)/basic/shim_test.c -o $(OBJ_DIR)/shim_test.o
 shim_test: shim_test.o
 	$(LD) $(LDFLAGS) $(OBJ_DIR)/shim_test.o -o $(TEST_DIR)/basic/shim_test
-
+	
 
 .PHONY: clean
 clean:
