@@ -86,10 +86,11 @@ int rateTrace(trace myTrace){
   		if(call_type == (Malloc || Calloc)){
   			if(malloc_map.find( called_from ) == malloc_map.end()){
   				malloc_map[called_from] = 1;
-  				rating += 3;
   			}
   			else{
 				malloc_map[called_from]++;
+				rating += 3;
+
   			}
   		}
   		else if(call_type == Free){
@@ -98,6 +99,8 @@ int rateTrace(trace myTrace){
   				rating += 3;
   			}
   			else{
+  				if(malloc_map[called_from] == 0)
+  					rating += 3;
 				malloc_map[called_from]--;
   			}
   		}
@@ -106,7 +109,6 @@ int rateTrace(trace myTrace){
   			{
   				if(!parameter){
   				    malloc_map[parameter] = 1;
-  				    rating += 3;	
   				}
   				else{
   					malloc_map[parameter] = -1;
@@ -159,7 +161,7 @@ int main(){
 		std::string lol = scheduler.front();
 		scheduler.pop();
 		auto val = rateTrace(dummy_trace);
-		if(val > 5){
+		if(val > 0){
 			schedule(val, lol);
 		}
 	}
