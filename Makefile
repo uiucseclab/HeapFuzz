@@ -24,7 +24,7 @@ exec.o: $(SRC_DIR)/exec.cpp $(SRC_DIR)/exec.hpp
 
 
 control.so: $(SRC_DIR)/control.c
-	$(C) $(CFLAGS) -shared -o $(BIN_DIR)/control.so -fPIC $(SRC_DIR)/control.c
+	$(C) $(CFLAGS) -shared -o $(BIN_DIR)/control.so -fPIC $(SRC_DIR)/control.c -ldl
 
 
 all: main.o exec.o control.so
