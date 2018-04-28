@@ -8,24 +8,25 @@ __fuzzer_forkserver:
 
   /* Phone home and tell the parent that we're OK. */
 
-  mov  $4, %rdx          /* length    */
-  mov $__fuzzer_temp, %rsi /* data      */
+  push $0xAAAAAAA
+  push $0xAAAAAAA
+
+  mov  $4, %rdx         /* length    */
+  mov %rsp, %rsi        /* data      */
   mov $199, %rdi        /* file desc */
-  mov  $1, %rax    /* call write */
+  mov  $1, %rax         /* call write */
   syscall
-  addl  $12, %esp
 
 __fuzzer_fork_wait_loop:
 
   /* Wait for parent by reading from the pipe. This will block until
      the parent sends us something. Abort if read fails. */
 
-  mov $4, %rdx          /* length    */
+  mov $4, %rdx             /* length    */
   mov $__fuzzer_temp, %rsi /* data      */
-  mov $198, %rdi        /* file desc */
-  mov $0, %rax    /* call  read */
+  mov $198, %rdi           /* file desc */
+  mov $0, %rax             /* call  read */
   syscall
-  addl  $12, %esp
 
   cmpl  $4, %eax
   jne   __fuzzer_die
@@ -48,14 +49,12 @@ __fuzzer_fork_wait_loop:
   mov $199, %rdi           /* file desc */
   mov $1, %rax             /* call write */
   syscall 
-  addl  $12, %esp
 
   mov  $2, %rdx                /* WUNTRACED */
   mov  $__fuzzer_temp, %rsi    /* status    */
   mov  $__fuzzer_fork_pid, %rdi /* PID       */
   xor  %r10, %r10              /* rusage NULL */
   mov  $7, %rax                /* call waitpid */
-  addl  $12, %esp
 
   cmpl  $0, %eax
   jle   __fuzzer_die
@@ -67,7 +66,6 @@ __fuzzer_fork_wait_loop:
   mov $199, %rdi          /* file desc */
   mov $1, %rax             /* call write */
   syscall 
-  addl  $12, %esp
 
   jmp __fuzzer_fork_wait_loop
 
@@ -75,6 +73,8 @@ __fuzzer_fork_resume:
 
   /* In child process: close fds, resume execution. */
 
+  addl $8, %esp  /* Fix stack from storing the temps */
+  
   mov $198, %rdi
   mov $3, %rax
   syscall  /* call close */

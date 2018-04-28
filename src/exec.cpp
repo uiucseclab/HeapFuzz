@@ -56,9 +56,9 @@ void child_finish(pid_t child, std::unique_ptr<breakpoint> bp) {
 // Input: pid of child
 // Output:
 //wait for child, to pass control back to parent process
-static void close_parent_pipes() {
-  close(server_pipe[0]);
-  close(fuzzer_pipe[1]);
+void close_parent_pipes(int server_read, int fuzzer_write) {
+  close(server_read);
+  close(fuzzer_write);
 
 }
 
@@ -78,7 +78,6 @@ pid_t child_exec(const std::string path, char *const argv[]) {
       case -1:  // error
         break;
       default:  // parent
-        close_parent_pipes();
         break;
     }
   } while (result == -1 && errno == EAGAIN);
@@ -86,7 +85,7 @@ pid_t child_exec(const std::string path, char *const argv[]) {
   return result;
 }
 
-void prepare_fork_server(){
+void prepare_fork_server(int *server_pipe, int *fuzzer_pipe){
   pipe(server_pipe);
   pipe(fuzzer_pipe);
 
@@ -94,12 +93,15 @@ void prepare_fork_server(){
   // in the server?
   auto read_end = fcntl(server_pipe[0], F_DUPFD, 198); //fork server reading end at 198
   auto write_end = fcntl(fuzzer_pipe[1], F_DUPFD, 199); //fork server writing end at 199
-
+  
   //Close the old fds and replaced them with the duped fds
   close(server_pipe[0]);
   close(fuzzer_pipe[1]);
   server_pipe[0] = read_end;
   fuzzer_pipe[1] = write_end;
+
+  std::cout << server_pipe[0] << " " << server_pipe[1] << std::endl;
+  std::cout << fuzzer_pipe[0] << " " << fuzzer_pipe[1] << std::endl; 
 }
 
       
