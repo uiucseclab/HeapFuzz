@@ -3,11 +3,7 @@
 #include <stdio.h>
 #include <dlfcn.h>
 
-
-
 static void* (*real_malloc)(size_t)=NULL;
-
-
 
 static void mtrace_init(void)
 {
@@ -17,6 +13,7 @@ static void mtrace_init(void)
     }
 }
 
+
 void *malloc(size_t size)
 {
     if(real_malloc==NULL) {
@@ -24,7 +21,7 @@ void *malloc(size_t size)
     }
 
     void *p = NULL;
-    fprintf(stderr, "malloc(%d) = ", size);
+    fprintf(stderr, "malloc(%zu) = ", size);
     p = real_malloc(size);
     fprintf(stderr, "%p\n", p);
     return p;

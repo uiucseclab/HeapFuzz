@@ -7,19 +7,20 @@
 
 std::mt19937 seed(12345);
 std::queue<std::string> scheduler;
+typedef unsigned long address;
 
 //Maps call address of mallocs to number it has been called
 std::map<address,unsigned int> malloc_map;
-std::map<address,unsigned int> free_map;
+//std::map<address,unsigned int> free_map;
 
 
-enum mem_op_type {Malloc,Free};
-typedef unsigned long address;
+enum mem_op_type {Malloc,Free, Calloc, Realloc};
 
 typedef struct mem_op {
   mem_op_type call_type;
   address called_from;
   unsigned long parameter;
+  unsigned long parameter2;
 } mem_op;
 
 typedef std::vector<mem_op> trace;
@@ -33,7 +34,8 @@ std::string mutate(std::string input){
 	std::uniform_int_distribution<int> len_change_choice(1, 2);
 	std::uniform_int_distribution<int> rand_char(0, 255);
 
-
+	//for(int i =0; i<10; i++)
+	//	std::cout << "rand val is: " << rand_char(seed) << std::endl;
 	auto num_mutations = 3;
 	for (auto i = 0; i < num_mutations; i++)
 	{
@@ -75,11 +77,14 @@ int rateTrace(trace myTrace){
 	auto rating = 0;
 
 	for(auto &call : myTrace){
-		auto call_type  call.call_type;
+		auto call_type = call.call_type;
   		auto called_from = call.called_from;
+  		auto parameter = call.parameter;
+  		auto parameter2 = call.parameter2;
+
   		//unsigned long parameter;
-  		if(call_type == Malloc){
-  			if(my_map.find( key ) == my_map.end()){
+  		if(call_type == (Malloc || Calloc)){
+  			if(malloc_map.find( called_from ) == malloc_map.end()){
   				malloc_map[called_from] = 1;
   				rating += 3;
   			}
@@ -87,22 +92,37 @@ int rateTrace(trace myTrace){
 				malloc_map[called_from]++;
   			}
   		}
-
-  		if(call_type == Free){
-  			if(my_map.find( key ) == my_map.end()){
-  				free_map[called_from] = 1;
+  		else if(call_type == Free){
+  			if(malloc_map.find( called_from ) == malloc_map.end()){
+  				malloc_map[called_from] = -1; //flag?
   				rating += 3;
   			}
   			else{
-				free_map[called_from]++;
+				malloc_map[called_from]--;
   			}
   		}
-
-
-	}
-	return 1;
+  		else if(call_type == Realloc){
+  			if(malloc_map.find(parameter) == malloc_map.end())
+  			{
+  				if(!parameter){
+  				    malloc_map[parameter] = 1;
+  				    rating += 3;	
+  				}
+  				else{
+  					malloc_map[parameter] = -1;
+  					rating += 3;
+  				}
+  			}
+  			else{
+  				malloc_map[called_from] = 1;
+  				malloc_map[parameter]--;
+  				rating += 3;
+  			}
+  		}
+  	}
+	
+	return rating;
 }
-
 
 int main(){
 	std::string testStr = "testtesttest";
@@ -118,21 +138,40 @@ int main(){
 	mem_op m1 = {Malloc,0x1000,32};
 	mem_op m2 = {Malloc,0x1000,32};
 	mem_op m3 = {Malloc,0x1000,32};
-	trace dummy_trace = {m1,m2,m3};
+	mem_op m4 = {Free,0x1000,32};
+
+	trace dummy_trace = {m1,m2,m3,m4};
 
 	scheduler.push(testStr);
 
 	//will eventually be a while !scheduler.empty()
-	for (auto i = 0; i < 10; i++)
+	/*for (auto i = 0; i < 10; i++)
 	{
 		//str = scheduler.pop()
 		//trace = program.run(str)
 		auto val = rateTrace(dummy_trace);
 		//auto val = rateTrace(trace);
 		//schedule(val,str);
+	}*/
+
+	while(!scheduler.empty())
+	{
+		std::string lol = scheduler.front();
+		scheduler.pop();
+		auto val = rateTrace(dummy_trace);
+		if(val > 5){
+			schedule(val, lol);
+		}
 	}
 
+	auto my_map = malloc_map;
+	for(auto &iter : my_map)
+	{
+		if(iter.second != 0)
+			std::cout << "Error detected \n"; 
+	}
 
+	return 0;
 }
 
 
