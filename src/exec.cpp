@@ -98,23 +98,28 @@ pid_t child_exec(const std::string path, char *const argv[]) {
   return result;
 }
 
-void prepare_fork_server(int *server_pipe, int *fuzzer_pipe){
+void prepare_fork_server(int *server_pipe, int *fuzzer_pipe, int *trace_pipe){
   pipe(server_pipe);
   pipe(fuzzer_pipe);
+  pipe(trace_pipe);
 
   //TODO: do we need to set FD_CLOEXEC on the other ends to not have to close them 
   // in the server?
   auto read_end = fcntl(server_pipe[0], F_DUPFD, 198); //fork server reading end at 198
   auto write_end = fcntl(fuzzer_pipe[1], F_DUPFD, 199); //fork server writing end at 199
+  auto trace_write= fcntl(trace_pipe[0], F_DUPFD, 200); //fork server trace writing end at 200
   
   //Close the old fds and replaced them with the duped fds
   close(server_pipe[0]);
   close(fuzzer_pipe[1]);
+  close(trace_pipe[1]);
   server_pipe[0] = read_end;
   fuzzer_pipe[1] = write_end;
+  trace_pipe[1] = trace_write;
 
   std::cout << server_pipe[0] << " " << server_pipe[1] << std::endl;
   std::cout << fuzzer_pipe[0] << " " << fuzzer_pipe[1] << std::endl; 
+  std::cout << trace_pipe[0] << " " << trace_pipe[1] << std::endl; 
 }
 
       

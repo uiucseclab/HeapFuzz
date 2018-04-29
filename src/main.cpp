@@ -21,10 +21,10 @@ typedef struct config {
 //base point for all execution
 void run(config conf) {
   char *child_args[1] = {0};
-  int fuzzer_pipe[2], server_pipe[2];
+  int fuzzer_pipe[2], server_pipe[2], trace_pipe[2];
 
   //load child process, returns just before first instruction with child stopped
-  prepare_fork_server(server_pipe, fuzzer_pipe);
+  prepare_fork_server(server_pipe, fuzzer_pipe, trace_pipe);
   //std::cout << "Fork server ready" << std::endl;
   //dont use the return value here because we actually want the grandchild
   child_exec(conf.exec_name, child_args);
