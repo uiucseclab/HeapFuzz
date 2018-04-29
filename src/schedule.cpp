@@ -4,27 +4,15 @@
 #include <random>
 #include <queue>
 #include <map>
+#include "schedule.hpp"
+#include "exec.hpp"
 
 std::mt19937 seed(12345);
 std::queue<std::string> scheduler;
-typedef unsigned long address;
 
 //Maps call address of mallocs to number it has been called
 std::map<address,unsigned int> malloc_map;
 //std::map<address,unsigned int> free_map;
-
-
-enum mem_op_type {Malloc,Free, Calloc, Realloc};
-
-typedef struct mem_op {
-  mem_op_type call_type;
-  address called_from;
-  unsigned long parameter;
-  unsigned long parameter2;
-} mem_op;
-
-typedef std::vector<mem_op> trace;
-
 
 
 std::string mutate(std::string input){
@@ -80,7 +68,7 @@ int rateTrace(trace myTrace){
 		auto call_type = call.call_type;
   		auto called_from = call.called_from;
   		auto parameter = call.parameter;
-  		auto parameter2 = call.parameter2;
+  		//auto parameter2 = call.parameter2;
 
   		//unsigned long parameter;
   		if(call_type == (Malloc || Calloc)){
@@ -118,7 +106,6 @@ int rateTrace(trace myTrace){
   			else{
   				malloc_map[called_from] = 1;
   				malloc_map[parameter]--;
-  				rating += 3;
   			}
   		}
   	}
@@ -126,8 +113,8 @@ int rateTrace(trace myTrace){
 	return rating;
 }
 
-int main(){
-	std::string testStr = "testtesttest";
+int init_schedule(std::string input, trace myTrace){
+	std::string testStr = input;
 	std::string mutated = mutate(testStr);
 	std::cout << testStr << '\n' << mutated << std::endl;
 
@@ -137,12 +124,12 @@ int main(){
 	//	std::cout << mutated <<  std::endl;
 	//}
 
-	mem_op m1 = {Malloc,0x1000,32};
-	mem_op m2 = {Malloc,0x1000,32};
-	mem_op m3 = {Malloc,0x1000,32};
-	mem_op m4 = {Free,0x1000,32};
-
-	trace dummy_trace = {m1,m2,m3,m4};
+	/*mem_op m1 = {Malloc,0x1000,32, 0};
+	mem_op m2 = {Malloc,0x1000,32, 0};
+	mem_op m3 = {Malloc,0x1000,32, 0};
+	mem_op m4 = {Free,0x1000,32, 0};
+*/
+	trace dummy_trace = myTrace;
 
 	scheduler.push(testStr);
 
@@ -170,7 +157,10 @@ int main(){
 	for(auto &iter : my_map)
 	{
 		if(iter.second != 0)
+		{
 			std::cout << "Error detected \n"; 
+			return 1;
+		}
 	}
 
 	return 0;

@@ -22,13 +22,15 @@ main.o: $(SRC_DIR)/main.cpp
 exec.o: $(SRC_DIR)/exec.cpp $(SRC_DIR)/exec.hpp 
 	$(CXX) $(CXXFLAGS) -c $(SRC_DIR)/exec.cpp -o $(OBJ_DIR)/exec.o
 
+schedule.o: $(SRC_DIR)/schedule.cpp $(SRC_DIR)/schedule.hpp
+	$(CXX) -Wall -Wextra -Werror -pedantic -std=c++1y -g3 -c $(SRC_DIR)/schedule.cpp -o $(OBJ_DIR)/schedule.o
 
 control.so: $(SRC_DIR)/control.c
 	$(C) $(CFLAGS) -shared -o $(BIN_DIR)/control.so -fPIC $(SRC_DIR)/control.c -ldl
 
 
-all: main.o exec.o control.so
-	$(LD) $(LDFLAGS) $(OBJ_DIR)/main.o $(OBJ_DIR)/exec.o -o $(BIN_DIR)/fuzzer
+all: main.o exec.o control.so schedule.o
+	$(LD) $(LDFLAGS) $(OBJ_DIR)/schedule.o $(OBJ_DIR)/main.o $(OBJ_DIR)/exec.o -o $(BIN_DIR)/fuzzer
 
 shim_test.o: $(TEST_DIR)/basic/shim_test.c
 	$(C) $(CFLAGS) -c $(TEST_DIR)/basic/shim_test.c -o $(OBJ_DIR)/shim_test.o
