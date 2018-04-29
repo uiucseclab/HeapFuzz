@@ -107,7 +107,7 @@ void prepare_fork_server(int *server_pipe, int *fuzzer_pipe, int *trace_pipe){
   // in the server?
   auto read_end = fcntl(server_pipe[0], F_DUPFD, 198); //fork server reading end at 198
   auto write_end = fcntl(fuzzer_pipe[1], F_DUPFD, 199); //fork server writing end at 199
-  auto trace_write= fcntl(trace_pipe[0], F_DUPFD, 200); //fork server trace writing end at 200
+  auto trace_write= fcntl(trace_pipe[1], F_DUPFD, 200); //fork server trace writing end at 200
   
   //Close the old fds and replaced them with the duped fds
   close(server_pipe[0]);

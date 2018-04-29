@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#define TRACE_FD 200
 #define WRITE_FD 199
 #define READ_FD 198
 
@@ -11,6 +12,7 @@ int32_t temp, pid;
 
 void start_mtrace_fork_server(){
     write(WRITE_FD, &status_ok, 4);
+    write(TRACE_FD, &status_ok, 4);
 
     while(1){
         int res;
@@ -23,6 +25,7 @@ void start_mtrace_fork_server(){
         if(pid == 0){ //Grandchild closes pipes and begins running
             close(WRITE_FD);
             close(READ_FD);
+            close(TRACE_FD);
             break;
         }else {
             write(WRITE_FD, &pid, 4);
