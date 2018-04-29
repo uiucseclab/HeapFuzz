@@ -1,10 +1,10 @@
 # 460_project
 Coverage based fuzzer for CS460
-References:  
-https://sec-consult.com/wp-content/uploads/files/vulnlab/the_art_of_fuzzing_slides.pdf  
-All of lcamtuf's blog posts on afl  
-afl whitepaper: http://lcamtuf.coredump.cx/afl/technical_details.txt  
-Angora: https://arxiv.org/pdf/1803.01307.pdf  
+References:
+https://sec-consult.com/wp-content/uploads/files/vulnlab/the_art_of_fuzzing_slides.pdf
+All of lcamtuf's blog posts on afl
+afl whitepaper: http://lcamtuf.coredump.cx/afl/technical_details.txt
+Angora: https://arxiv.org/pdf/1803.01307.pdf
 
 # Features
 - Fork server to reduce overhead of spawning new processes
@@ -12,6 +12,15 @@ Angora: https://arxiv.org/pdf/1803.01307.pdf
 - Detecting heap errors such as 
   - Double frees
   - Overlapping chunks
+  - Memory leaks
+  - Segfaults
+
+# Design
+The fuzzer takes a binary an gives it inputs that hopefully lead to intersting heap behaviours and/or crashes.
+The binary is compiled with an extra ~20 line shim (src/shim.h) that causes the binary to wait for the main binary to signal it to fork.
+This means that the each instance of the binary we spawn uses the kernel's Copy-on-Write for forked processes, speeding up the time to spawn a new process.
+The binary is launched with LDPRELOAD in order to trace heap functions.
+An input scheduler generates inputs and then looks at whether there was interesting behaviour as a result. Based on the behaviour we can queue a varying number of new inputs based on the originating input.
 
 # Development History
 This is a short timeline of things we tried.
@@ -33,5 +42,8 @@ Turns out that inserting these hooks took too much space in the binary. We would
 
 ### Switching Away From Binary Only Fuzzing 
 We originally wanted to fuzz binaries without touching any source. However we ran into so many problems and we were running out of time so we switched to inserting our fork-server shim and recompiling our target binaries.
-In order to hook on malloc/calloc/realloc/free we compile a shared library object and use LDPRLOAD in order to get the linker to replace glibc malloc with our hooked version instead.
+In order to hook on malloc/calloc/realloc/free we compile a shared library object and use LDPRELOAD in order to get the linker to replace glibc malloc with our hooked version instead.
+
+### Tracing Memory
+At this point we can trace heap allocations and frees. We can follow those traces to determine if an application is doing something wrong.
 
