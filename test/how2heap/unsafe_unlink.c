@@ -1,3 +1,4 @@
+#include "../../src/shim.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +9,7 @@ uint64_t *chunk0_ptr;
 
 int main()
 {
+    start_mtrace_fork_server();
 	fprintf(stderr, "Welcome to unsafe unlink 2.0!\n");
 	fprintf(stderr, "Tested in Ubuntu 14.04/16.04 64bit.\n");
 	fprintf(stderr, "This technique can be used when you have a pointer at a known location to a region you can call unlink on.\n");

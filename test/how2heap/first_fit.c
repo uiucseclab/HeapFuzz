@@ -1,9 +1,11 @@
+#include "../../src/shim.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 int main()
 {
+    start_mtrace_fork_server();
 	fprintf(stderr, "This file doesn't demonstrate an attack, but shows the nature of glibc's allocator.\n");
 	fprintf(stderr, "glibc uses a first-fit algorithm to select a free chunk.\n");
 	fprintf(stderr, "If a chunk is free and large enough, malloc will select this chunk.\n");

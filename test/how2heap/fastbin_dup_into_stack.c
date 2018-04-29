@@ -1,8 +1,10 @@
+#include "../../src/shim.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 int main()
 {
+    start_mtrace_fork_server();
 	fprintf(stderr, "This file extends on fastbin_dup.c by tricking malloc into\n"
 	       "returning a pointer to a controlled location (in this case, the stack).\n");
 

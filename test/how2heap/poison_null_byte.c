@@ -1,3 +1,4 @@
+#include "../../src/shim.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,6 +8,7 @@
 
 int main()
 {
+    start_mtrace_fork_server();
 	fprintf(stderr, "Welcome to poison null byte 2.0!\n");
 	fprintf(stderr, "Tested in Ubuntu 14.04 64bit.\n");
 	fprintf(stderr, "This technique can be used when you have an off-by-one into a malloc'ed region with a null byte.\n");

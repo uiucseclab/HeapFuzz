@@ -1,3 +1,4 @@
+#include "../../src/shim.h"
 /*
 
  A simple tale of overlapping chunk.
@@ -12,6 +13,7 @@
 #include <stdint.h>
 
 int main(int argc , char* argv[]){
+    start_mtrace_fork_server();
 
 
 	intptr_t *p1,*p2,*p3,*p4;

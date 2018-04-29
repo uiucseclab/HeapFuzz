@@ -1,8 +1,10 @@
+#include "../../src/shim.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 int main()
 {
+    start_mtrace_fork_server();
 	fprintf(stderr, "This file demonstrates a simple double-free attack with fastbins.\n");
 
 	fprintf(stderr, "Allocating 3 buffers.\n");

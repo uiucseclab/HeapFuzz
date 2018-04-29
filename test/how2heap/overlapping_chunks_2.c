@@ -1,3 +1,4 @@
+#include "../../src/shim.h"
 /*
  Yet another simple tale of overlapping chunk.
 
@@ -15,6 +16,7 @@
 #include <malloc.h>
 
 int main(){
+    start_mtrace_fork_server();
   
   intptr_t *p1,*p2,*p3,*p4,*p5,*p6;
   unsigned int real_size_p1,real_size_p2,real_size_p3,real_size_p4,real_size_p5,real_size_p6;
