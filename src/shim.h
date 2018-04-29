@@ -25,7 +25,6 @@ void start_mtrace_fork_server(){
         if(pid == 0){ //Grandchild closes pipes and begins running
             close(WRITE_FD);
             close(READ_FD);
-            close(TRACE_FD);
             break;
         }else {
             write(WRITE_FD, &pid, 4);
