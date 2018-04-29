@@ -1,3 +1,4 @@
+#include "../../src/shim.h"
 /*
 Advanced exploitation of the House of Lore - Malloc Maleficarum.
 This PoC take care also of the glibc hardening of smallbin corruption.
@@ -6,8 +7,10 @@ This PoC take care also of the glibc hardening of smallbin corruption.
 
 else
     {
+    start_mtrace_fork_server();
       bck = victim->bk;
     if (__glibc_unlikely (bck->fd != victim)){
+    start_mtrace_fork_server();
 
                   errstr = "malloc(): smallbin double linked list corrupted";
                   goto errout;
@@ -29,6 +32,7 @@ else
 void jackpot(){ puts("Nice jump d00d"); exit(0); }
 
 int main(int argc, char * argv[]){
+    start_mtrace_fork_server();
 
 
   intptr_t* stack_buffer_1[4] = {0};

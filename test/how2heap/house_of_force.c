@@ -1,3 +1,4 @@
+#include "../../src/shim.h"
 /*
 
    This PoC works also with ASLR enabled.
@@ -21,6 +22,7 @@ char bss_var[] = "This is a string that we want to overwrite.";
 
 int main(int argc , char* argv[])
 {
+    start_mtrace_fork_server();
 	fprintf(stderr, "\nWelcome to the House of Force\n\n");
 	fprintf(stderr, "The idea of House of Force is to overwrite the top chunk and let the malloc return an arbitrary value.\n");
 	fprintf(stderr, "The top chunk is a special chunk. Is the last in memory "

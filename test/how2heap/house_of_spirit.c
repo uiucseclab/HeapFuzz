@@ -1,8 +1,10 @@
+#include "../../src/shim.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 int main()
 {
+    start_mtrace_fork_server();
 	fprintf(stderr, "This file demonstrates the house of spirit attack.\n");
 
 	fprintf(stderr, "Calling malloc() once so that it sets up its memory.\n");

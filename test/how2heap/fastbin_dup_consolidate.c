@@ -1,8 +1,10 @@
+#include "../../src/shim.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 int main() {
+    start_mtrace_fork_server();
   void* p1 = malloc(0x40);
   void* p2 = malloc(0x40);
   fprintf(stderr, "Allocated two fastbins: p1=%p p2=%p\n", p1, p2);

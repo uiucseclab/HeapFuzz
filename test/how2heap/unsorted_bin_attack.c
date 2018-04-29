@@ -1,7 +1,9 @@
+#include "../../src/shim.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 int main(){
+    start_mtrace_fork_server();
 	fprintf(stderr, "This file demonstrates unsorted bin attack by write a large unsigned long value into stack\n");
 	fprintf(stderr, "In practice, unsorted bin attack is generally prepared for further attacks, such as rewriting the "
 		   "global variable global_max_fast in libc for further fastbin attack\n\n");

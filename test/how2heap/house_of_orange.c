@@ -1,3 +1,4 @@
+#include "../../src/shim.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +17,7 @@ int winner ( char *ptr);
 
 int main()
 {
+    start_mtrace_fork_server();
     /*
       The House of Orange starts with the assumption that a buffer overflow exists on the heap
       using which the Top (also called the Wilderness) chunk can be corrupted.
@@ -257,6 +259,7 @@ int main()
 
 int winner(char *ptr)
 { 
+    start_mtrace_fork_server();
     system(ptr);
     return 0;
 }
