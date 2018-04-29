@@ -2,6 +2,7 @@
 #define TRACE_OUT_FD 200
 #include <stdio.h>
 #include <dlfcn.h>
+#include <unistd.h>
 
 static void* (*real_malloc)(size_t)=NULL;
 static void* (*real_free)(void*)=NULL;
@@ -38,10 +39,10 @@ void *malloc(size_t size)
     
 
     
-    int8_t m = 0x6d;
-    write(TRACE_FD, &m, 1);
-    write(TRACE_FD, &size, 8);
-    write(TRACE_FD,p,8);
+    unsigned char m = 0x6d;
+    write(TRACE_OUT_FD, &m, 1);
+    write(TRACE_OUT_FD, &size, 8);
+    write(TRACE_OUT_FD,p,8);
 
     return p;
 }
@@ -57,9 +58,9 @@ void free(void* ptr)
 
     real_free(ptr);
 
-    int8_t f = 0x66;
-    write(TRACE_FD, &f, 1);
-    write(TRACE_FD,ptr,8);
+    unsigned char f = 0x66;
+    write(TRACE_OUT_FD, &f, 1);
+    write(TRACE_OUT_FD,ptr,8);
     return;
 }
 
