@@ -33,8 +33,6 @@ char* get_so_path(){
   strcat(result,exec_path);
   strcat(result,controlso);
 
-  //char *cstr = new char[str.length() + 1];
-  std::cout << result << std::endl;
   return result;
 }
 

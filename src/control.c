@@ -1,9 +1,11 @@
 #define _GNU_SOURCE
-
+#define TRACE_OUT_FD 200
 #include <stdio.h>
 #include <dlfcn.h>
 
 static void* (*real_malloc)(size_t)=NULL;
+static void* (*real_free)(void*)=NULL;
+
 
 static void mtrace_init(void)
 {
@@ -11,6 +13,15 @@ static void mtrace_init(void)
     if (NULL == real_malloc) {
         fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
     }
+}
+
+static void free_init(void)
+{
+    real_free = dlsym(RTLD_NEXT, "free");
+    if (NULL == real_malloc) {
+        fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
+    }
+
 }
 
 
@@ -24,5 +35,31 @@ void *malloc(size_t size)
     fprintf(stderr, "malloc(%zu) = ", size);
     p = real_malloc(size);
     fprintf(stderr, "%p\n", p);
+    
+
+    
+    int8_t m = 0x6d;
+    write(TRACE_FD, &m, 1);
+    write(TRACE_FD, &size, 8);
+    write(TRACE_FD,p,8);
+
     return p;
 }
+
+
+void free(void* ptr)
+{
+    if(real_free==NULL) {
+        free_init();
+    }
+
+    fprintf(stderr, "free(%p)\n", ptr);
+
+    real_free(ptr);
+
+    int8_t f = 0x66;
+    write(TRACE_FD, &f, 1);
+    write(TRACE_FD,ptr,8);
+    return;
+}
+
