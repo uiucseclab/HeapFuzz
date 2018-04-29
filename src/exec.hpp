@@ -11,7 +11,7 @@
 pid_t child_exec(const std::string path, char *const argv[]);
 
 //sets up pipes befor the fork
-void prepare_fork_server(int *, int *);
+void prepare_fork_server(int *, int *, int *);
 void close_parent_pipes(int , int );
 
 #endif //EXEC_H
