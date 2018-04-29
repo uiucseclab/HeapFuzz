@@ -10,7 +10,33 @@
 #include <iostream>
 #include <vector>
 #include <string.h>
+#include <unistd.h>
 
+//return char ptr of so path
+char* get_so_path(){
+  //char result[152];
+  //char result[152] = malloc(152);
+  char* result = (char*)malloc(152);
+
+
+  char exec_path[128];
+  size_t end = readlink("/proc/self/exe",exec_path,128);
+  //std::string str = "LD_PRELOAD=";
+
+  exec_path[end-6] = 0;
+
+  char ld_preload[14] =  "LD_PRELOAD=";
+  char controlso[12] =  "control.so";
+  //std::string myString(exec_path, 128);
+
+  strcpy(result, ld_preload);
+  strcat(result,exec_path);
+  strcat(result,controlso);
+
+  //char *cstr = new char[str.length() + 1];
+  std::cout << result << std::endl;
+  return result;
+}
 
 // Start child process
 void start_child(std::string path, char *const argv[]) {
@@ -18,17 +44,25 @@ void start_child(std::string path, char *const argv[]) {
   // ptrace(PTRACE_TRACEME, 0, 0, 0);
   // we need the shimmed child here
 
-  std::string str = "LD_PRELOAD=./control.so";
-  char *cstr = new char[str.length() + 1];
-  strcpy(cstr, str.c_str());
+  //char exec_path[128];
+  //readlink("/proc/self/exe",exec_path,128);
+  //std::string str = "LD_PRELOAD=./control.so";
+  //std::cout << exec_path << std::endl;
+
+
+
+  //char *cstr = new char[str.length() + 1];
+  //strcpy(cstr, str.c_str());
+  
   // do stuff
   //delete [] cstr;
 
 
   //std::vector<char> control_path(str.c_str(), str.c_str() + str.size() + 1);
   //char* control_path = "LD_PRELOAD=./control.so".c_str();
-  char* envp[] = {cstr, NULL};
-  execve(path.c_str(), argv,envp);
+  char* ld_preload = get_so_path();
+  char* envp[] = {ld_preload, NULL};
+  execve(path.c_str(), argv, envp);
   perror ("Error when executing child: ");
 
 }

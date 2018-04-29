@@ -1,5 +1,9 @@
 #include <stdio.h>
+<<<<<<< Updated upstream
 #include "../../src/shim.h"
+=======
+#include <dlfcn.h>
+>>>>>>> Stashed changes
 
 int main()
 {
