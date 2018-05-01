@@ -13,7 +13,7 @@ SRC_DIR = $(BASE_DIR)/src
 OBJ_DIR = $(BASE_DIR)/obj
 TEST_DIR = $(BASE_DIR)/test
 
-CXXFLAGS = -Wall -Wextra -Werror -pedantic -std=c++1z -g3
+CXXFLAGS = -Wall -Wextra -Werror -pedantic -std=c++1y -g3
 CFLAGS = -Wall -Wextra -g 
 
 main.o: $(SRC_DIR)/main.cpp

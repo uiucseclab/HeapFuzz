@@ -1,17 +1,12 @@
-#include <string>
-#include <vector>
-#include <iostream>
-#include <random>
-#include <queue>
-#include <map>
 #include "schedule.hpp"
 #include "exec.hpp"
 
 std::mt19937 seed(12345);
+std::map<address,unsigned int> malloc_map;
 std::queue<std::string> scheduler;
 
+
 //Maps call address of mallocs to number it has been called
-std::map<address,unsigned int> malloc_map;
 //std::map<address,unsigned int> free_map;
 
 
@@ -49,11 +44,13 @@ std::string mutate(std::string input){
 
 
 //mutate string n times and add them to queue
-void schedule(int num_to_schedule,std::string input){
+void schedule(int num_to_schedule,std::vector<std::string> input){
 
+	for(auto i =0; i < (int)input.size(); i++)
+		scheduler.push(input[i]);
 	for (auto i = 0; i < num_to_schedule; i++)
 	{
-		scheduler.push(mutate(input));
+		scheduler.push(mutate(input[i]));
 	}
 }
 
@@ -113,7 +110,7 @@ int rateTrace(trace myTrace){
 	return rating;
 }
 
-int init_schedule(std::string input, trace myTrace){
+/*int init_schedule(std::string input, trace myTrace){
 	std::string testStr = input;
 	std::string mutated = mutate(testStr);
 	std::cout << testStr << '\n' << mutated << std::endl;
@@ -124,24 +121,24 @@ int init_schedule(std::string input, trace myTrace){
 	//	std::cout << mutated <<  std::endl;
 	//}
 
-	/*mem_op m1 = {Malloc,0x1000,32, 0};
+	mem_op m1 = {Malloc,0x1000,32, 0};
 	mem_op m2 = {Malloc,0x1000,32, 0};
 	mem_op m3 = {Malloc,0x1000,32, 0};
 	mem_op m4 = {Free,0x1000,32, 0};
-*/
+
 	trace dummy_trace = myTrace;
 
 	scheduler.push(testStr);
 
 	//will eventually be a while !scheduler.empty()
-	/*for (auto i = 0; i < 10; i++)
+	for (auto i = 0; i < 10; i++)
 	{
-		//str = scheduler.pop()
+		//str = scheduler.pop()	
 		//trace = program.run(str)
 		auto val = rateTrace(dummy_trace);
 		//auto val = rateTrace(trace);
 		//schedule(val,str);
-	}*/
+	}
 
 	while(!scheduler.empty())
 	{
@@ -153,7 +150,6 @@ int init_schedule(std::string input, trace myTrace){
 		}
 	}
 
-	auto my_map = malloc_map;
 	for(auto &iter : my_map)
 	{
 		if(iter.second != 0)
@@ -165,5 +161,5 @@ int init_schedule(std::string input, trace myTrace){
 
 	return 0;
 }
-
+*/
 
