@@ -5,6 +5,7 @@
 #include <cassert>
 
 #include "exec.hpp"
+#include "schedule.hpp"
 
 // TODO: write tests
 // TODO: more generic makefile
@@ -43,8 +44,34 @@ void run(config conf) {
     read(fuzzer_pipe[0], &pid,  4);
     std::cout << "Grandchild PID: "<< std::dec << pid << std::endl;
     //PTRACE_ATTACH to the grandchild
-    //read the wait status from the child
-    read(fuzzer_pipe[0], &status, 4);
+    //read the wait status from the child 
+
+    //analyze the trace and queue "interesting" strings
+    trace myTrace;
+    char callByte;
+    do{
+      uint64_t size;
+      uint64_t addr;
+      read(trace_pipe[0], &callByte, 1);
+      if(callByte == 'm')
+      {
+        read(trace_pipe[0], &size, sizeof(size_t));
+        read(trace_pipe[0], &addr, sizeof(size_t));
+        mem_op v ={Malloc, (address) addr, (unsigned long) size, 0};
+        myTrace.push_back(v);
+      }
+      if(callByte == 'f')
+      {
+        read(trace_pipe[0], &addr, sizeof(size_t));
+        mem_op v ={Free, (address) addr, 0, 0};
+        myTrace.push_back(v);
+      }
+
+      read(fuzzer_pipe[0], &status, 4);
+    } while((WIFEXITED(status) && WIFSIGNALED(status)) == 0);
+
+    std::vector<std::string> init_input (1, "testtesttest"); //= init_seeds;
+    schedule(rateTrace(myTrace), init_input);
     //run child until termination
     if (WIFEXITED(status)) {
         std::cout << "Child exited with "<< WEXITSTATUS(status) << std::endl;
