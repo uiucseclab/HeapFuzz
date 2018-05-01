@@ -37,29 +37,15 @@ char* get_so_path(){
 }
 
 // Start child process
-void start_child(std::string path, char *const argv[]) {
-  // start process
-  // ptrace(PTRACE_TRACEME, 0, 0, 0);
-  // we need the shimmed child here
-
-  //char exec_path[128];
-  //readlink("/proc/self/exe",exec_path,128);
-  //std::string str = "LD_PRELOAD=./control.so";
-  //std::cout << exec_path << std::endl;
-
-
-
-  //char *cstr = new char[str.length() + 1];
-  //strcpy(cstr, str.c_str());
-  
-  // do stuff
-  //delete [] cstr;
-
-
+void start_child(std::string path, char *const argv[], int *stdio_pipes) {
   //std::vector<char> control_path(str.c_str(), str.c_str() + str.size() + 1);
   //char* control_path = "LD_PRELOAD=./control.so".c_str();
+
   char* ld_preload = get_so_path();
   char* envp[] = {ld_preload, NULL};
+  close(stdio_pipes[1]); //stdin write
+  dup2(stdio_pipes[0], STDIN_FILENO);
+  close(stdio_pipes[0]);
   execve(path.c_str(), argv, envp);
   perror ("Error when executing child: ");
 
@@ -79,18 +65,19 @@ void close_parent_pipes(int server_read, int fuzzer_write) {
 // Output: pid of child
 //spawns child in a new process and attaches to it
 
-pid_t child_exec(const std::string path, char *const argv[]) {
+pid_t child_exec(const std::string path, char *const argv[], int *stdio_pipes) {
   pid_t result;
 
   do {
     result = fork();
     switch (result) {
       case 0:  // child
-        start_child(path, argv);
+        start_child(path, argv, stdio_pipes);
         break;
       case -1:  // error
         break;
       default:  // parent
+        close(stdio_pipes[0]);
         break;
     }
   } while (result == -1 && errno == EAGAIN);
@@ -98,28 +85,32 @@ pid_t child_exec(const std::string path, char *const argv[]) {
   return result;
 }
 
-void prepare_fork_server(int *server_pipe, int *fuzzer_pipe, int *trace_pipe){
+//We always need communication for traces
+void prepare_comm_pipes(int *trace_pipe){
+  pipe(trace_pipe);
+  auto trace_write= fcntl(trace_pipe[1], F_DUPFD, 200); //fork server trace writing end at 200
+  close(trace_pipe[1]);
+  trace_pipe[1] = trace_write;
+}
+
+//If we are using the fork server, initialize the pipes
+void prepare_fork_server(int *server_pipe, int *fuzzer_pipe){
   pipe(server_pipe);
   pipe(fuzzer_pipe);
-  pipe(trace_pipe);
 
   //TODO: do we need to set FD_CLOEXEC on the other ends to not have to close them 
   // in the server?
   auto read_end = fcntl(server_pipe[0], F_DUPFD, 198); //fork server reading end at 198
   auto write_end = fcntl(fuzzer_pipe[1], F_DUPFD, 199); //fork server writing end at 199
-  auto trace_write= fcntl(trace_pipe[1], F_DUPFD, 200); //fork server trace writing end at 200
   
   //Close the old fds and replaced them with the duped fds
   close(server_pipe[0]);
   close(fuzzer_pipe[1]);
-  close(trace_pipe[1]);
   server_pipe[0] = read_end;
   fuzzer_pipe[1] = write_end;
-  trace_pipe[1] = trace_write;
 
   std::cout << server_pipe[0] << " " << server_pipe[1] << std::endl;
   std::cout << fuzzer_pipe[0] << " " << fuzzer_pipe[1] << std::endl; 
-  std::cout << trace_pipe[0] << " " << trace_pipe[1] << std::endl; 
 }
 
       
