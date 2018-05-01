@@ -19,7 +19,7 @@ static void mtrace_init(void)
 static void free_init(void)
 {
     real_free = dlsym(RTLD_NEXT, "free");
-    if (NULL == real_malloc) {
+    if (NULL == real_free) {
         fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
     }
 
