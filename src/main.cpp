@@ -118,22 +118,26 @@ void run(config conf) {
         read(trace_pipe[0], &callByte, 1);
         if(callByte == 'm')
         {
-	  read(trace_pipe[0], &size, sizeof(size_t));
-	  read(trace_pipe[0], &addr, sizeof(size_t));
-	  mem_op v ={Malloc, (address) addr, (unsigned long) size, 0};
-	  myTrace.push_back(v);
+      	  read(trace_pipe[0], &size, sizeof(size_t));
+      	  read(trace_pipe[0], &addr, sizeof(size_t));
+      	  mem_op v ={Malloc, (address) addr, (unsigned long) size, 0};
+      	  myTrace.push_back(v);
         }
         if(callByte == 'f')
         {
-	  read(trace_pipe[0], &addr, sizeof(size_t));
-	  mem_op v ={Free, (address) addr, 0, 0};
-	  myTrace.push_back(v);
+      	  read(trace_pipe[0], &addr, sizeof(size_t));
+      	  mem_op v ={Free, (address) addr, 0, 0};
+      	  myTrace.push_back(v);
         }
         //read the wait status from the child
         read(fuzzer_pipe[0], &status, 4);
       } while((WIFEXITED(status) && WIFSIGNALED(status)) == 0);
 
-      std::vector<std::string> init_input (1, "testtesttest"); //= init_seeds;
+      // TODO: change args to have input folder
+      init_folder(conf.args[0]);
+      std::vector<std::string> init_paths = get_input_paths(conf.args[0]);
+      std::vector<std::string> init_seeds = get_init_seeds(init_paths, conf.args[0]);
+      std::vector<std::string> init_input = init_seeds;
       schedule(rateTrace(myTrace), init_input);
       //run child until termination
       print_wait_status(status);
