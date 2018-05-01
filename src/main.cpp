@@ -26,9 +26,6 @@ typedef struct config {
 } config;
 
 
-
-
-
 std::string file_to_seed(std::string path){
   std::ifstream t(path);
   std::stringstream buffer;
@@ -37,12 +34,8 @@ std::string file_to_seed(std::string path){
 }
 
 void init_folder(char* path){
-  
-      mkdir(path, 0777);
-  
+      mkdir(path, 0777); 
 }
-
-
 
 std::vector<std::string> get_init_seeds(std::vector<std::string> paths,std::string input_folder){
   
@@ -77,10 +70,6 @@ std::vector<std::string> get_input_paths(char* input_path){
   }
   return init_seeds;
 }
-
-
-
-
 
 
 void print_wait_status(int status){
