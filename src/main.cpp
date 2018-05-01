@@ -5,6 +5,11 @@
 #include <sys/wait.h>
 #include <cassert>
 #include <vector>
+#include <dirent.h>
+#include <sstream>
+#include <fstream>
+#include <sys/stat.h>
+#include <string.h>
 
 #include "exec.hpp"
 #include "schedule.hpp"
@@ -19,6 +24,64 @@ typedef struct config {
   std::vector<char*> args;
   char input_method;
 } config;
+
+
+
+
+
+std::string file_to_seed(std::string path){
+  std::ifstream t(path);
+  std::stringstream buffer;
+  buffer << t.rdbuf();
+  return buffer.str();
+}
+
+void init_folder(char* path){
+  
+      mkdir(path, 0777);
+  
+}
+
+
+
+std::vector<std::string> get_init_seeds(std::vector<std::string> paths,std::string input_folder){
+  
+  std::vector<std::string> init_seeds;
+  for (std::vector<std::string>::iterator i = paths.begin(); i != paths.end(); ++i)
+  {
+    init_seeds.push_back(input_folder + *i);
+  }
+  return init_seeds;
+}
+
+std::vector<std::string> get_input_paths(char* input_path){
+  std::vector<std::string> init_seeds;
+
+  DIR *dir;
+    struct dirent *ent;
+    if ((dir = opendir (input_path)) != NULL) {
+  /* print all the files and directories within directory */
+  while ((ent = readdir (dir)) != NULL) {
+    //printf ("%s\n", ent->d_name);
+    if(strcmp(ent->d_name,"..") && strcmp(ent->d_name,".")){
+    
+      //init_seeds.push_back(file_to_seed(strcat("in/",ent->d_name)));
+      init_seeds.push_back(ent->d_name);
+    }
+    }
+    closedir (dir);
+  } else {
+    /* could not open directory */
+    perror ("");
+    return init_seeds;
+  }
+  return init_seeds;
+}
+
+
+
+
+
 
 void print_wait_status(int status){
   if (WIFEXITED(status)) {
