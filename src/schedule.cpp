@@ -8,6 +8,11 @@ std::queue<std::string> scheduler;
 
 //Maps call address of mallocs to number it has been called
 //std::map<address,unsigned int> free_map;
+std::string get_next(){
+  auto r = scheduler.front();
+  scheduler.pop();
+  return r;
+}
 
 
 std::string mutate(std::string input){

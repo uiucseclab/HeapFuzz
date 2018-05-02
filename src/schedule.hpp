@@ -22,6 +22,7 @@ typedef struct mem_op {
 typedef std::vector<mem_op> trace;
 
 //int init_schedule(int seed, trace myTrace);
+std::string get_next();
 std::string mutate(std::string input);
 void schedule(int num_to_schedule, std::vector<std::string> input);
 int rateTrace(trace myTrace);

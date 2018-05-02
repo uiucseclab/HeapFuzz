@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <string.h>
+#include <errno.h>
 
 #include "exec.hpp"
 #include "schedule.hpp"
@@ -37,8 +38,7 @@ void init_folder(char* path){
       mkdir(path, 0777); 
 }
 
-std::vector<std::string> get_init_seeds(std::vector<std::string> paths,std::string input_folder){
-  
+std::vector<std::string> get_init_seeds(std::vector<std::string> paths,std::string input_folder){ 
   std::vector<std::string> init_seeds;
   for (std::vector<std::string>::iterator i = paths.begin(); i != paths.end(); ++i)
   {
@@ -81,78 +81,87 @@ void print_wait_status(int status){
   }
 }
 
+trace read_trace(int trace_pipe){
+  trace myTrace;
+  char callByte;
+  while(1){
+    uint64_t size;
+    uint64_t addr;
+    read(trace_pipe, &callByte, 1);
+    if(errno == EAGAIN || errno == EWOULDBLOCK){
+      std::cout << "Done reading" << std::endl;
+      break;
+    }
+    if(callByte == 'm')
+    {
+      read(trace_pipe, &size, sizeof(size_t));
+      read(trace_pipe, &addr, sizeof(size_t));
+      mem_op v ={Malloc, (address) addr, (unsigned long) size, 0};
+      myTrace.push_back(v);
+    }
+    if(callByte == 'f')
+    {
+      read(trace_pipe, &addr, sizeof(size_t));
+      mem_op v ={Free, (address) addr, 0, 0};
+      myTrace.push_back(v);
+    }
+  }
+  
+  return myTrace;
+}
+
 //base point for all execution
 void run(config conf) {
   char **child_args = &conf.args[0];
   int fuzzer_pipe[2], server_pipe[2], trace_pipe[2], stdin_pipe[2];
+  int status;
 
   //We should probably ALWAYS set up these pipes
   //We need the trace pipe and keeping the stdin pipe simplifies things
   prepare_comm_pipes(trace_pipe);
-  pipe(stdin_pipe);
+  std::vector<std::string> init_input (1, "testtesttest"); //= init_seeds;
+  schedule(1, init_input); //Put a seed into the scheduler
 
   //So now we can either use the fork server and pass stdin
   //or exec the child with different args
   if(conf.input_method == 's'){ 
     prepare_fork_server(server_pipe, fuzzer_pipe);
-    child_exec(conf.exec_name, child_args, stdin_pipe);
-
-    uint32_t status, pid;
-    int32_t msg = 0xcafebabe;
-    read(fuzzer_pipe[0], &status, 4); // get ready signal from child
-    assert(status == 0xdeadbeef);
 
     for(int i = 0; i < 10; i++){
-      //Now we can write to the server to fork
-      write(server_pipe[1], &msg,  4);
-      //After it forks we read its PID
-      read(fuzzer_pipe[0], &pid,  4);
-      //std::cout << "Grandchild PID: "<< std::dec << pid << std::endl;
-      //run child until termination
-      //analyze the trace and queue "interesting" strings
-      trace myTrace;
-      char callByte;
-      do{
-        uint64_t size;
-        uint64_t addr;
-        read(trace_pipe[0], &callByte, 1);
-        if(callByte == 'm')
-        {
-      	  read(trace_pipe[0], &size, sizeof(size_t));
-      	  read(trace_pipe[0], &addr, sizeof(size_t));
-      	  mem_op v ={Malloc, (address) addr, (unsigned long) size, 0};
-      	  myTrace.push_back(v);
-        }
-        if(callByte == 'f')
-        {
-      	  read(trace_pipe[0], &addr, sizeof(size_t));
-      	  mem_op v ={Free, (address) addr, 0, 0};
-      	  myTrace.push_back(v);
-        }
-        //read the wait status from the child
-        read(fuzzer_pipe[0], &status, 4);
-      } while((WIFEXITED(status) && WIFSIGNALED(status)) == 0);
+      pipe(stdin_pipe);
+      auto pid = child_exec(conf.exec_name, child_args, stdin_pipe);
+      auto in = get_next();
+      write(stdin_pipe[1], in.c_str(), in.size()+1);
+      close(stdin_pipe[1]); //We have to close this so the target doesn't hang, but we can't reopen it either...
 
-      // TODO: change args to have input folder
-      init_folder(conf.args[0]);
-      std::vector<std::string> init_paths = get_input_paths(conf.args[0]);
-      std::vector<std::string> init_seeds = get_init_seeds(init_paths, conf.args[0]);
-      std::vector<std::string> init_input = init_seeds;
-      schedule(rateTrace(myTrace), init_input);
-      //run child until termination
+      waitpid(pid, &status, WUNTRACED);
       print_wait_status(status);
+      trace myTrace = read_trace(trace_pipe[0]);
+      schedule(rateTrace(myTrace), init_input);
     }
   } else if(conf.input_method == 'a') {
     //generate the arg to launch the child with
     //launch the child and wait on it
-    int status;
-    auto pid = child_exec(conf.exec_name, child_args, stdin_pipe);
-    close(stdin_pipe[1]);
-    //get its trace
-    //read/epoll
-    waitpid(pid, &status, WUNTRACED);
-    print_wait_status(status);
-    //repeat
+    for(int i = 0; i < 10;  i++){
+      char* terminator = {0};
+      auto in = get_next();
+      auto copy = (char*)malloc(in.size()+1);
+      strcpy(copy, in.c_str());
+
+      conf.args.pop_back(); // remove the terminator
+      conf.args.push_back(copy);
+      conf.args.push_back(terminator);
+      auto pid = child_exec(conf.exec_name, &conf.args[0], stdin_pipe);
+      close(stdin_pipe[1]);
+      conf.args.erase(conf.args.end()-2);
+
+      //get its trace
+      //read/epoll
+      waitpid(pid, &status, WUNTRACED);
+      print_wait_status(status);
+      trace myTrace = read_trace(trace_pipe[0]);
+      schedule(rateTrace(myTrace), init_input);
+    }
   }
 }
 
@@ -172,8 +181,10 @@ int main(int argc, char *argv[]) {
   if(argc > 3){
     name = argv[2];
   }
-
-  config conf = {name, std::vector<char*>(argv+2, argv+argc), fuzz_type};
+  char* terminator = {0};
+  std::vector<char*> args = std::vector<char*>(argv+2, argv+argc);
+  args.push_back(terminator);
+  config conf = {name, args, fuzz_type};
 
   run(conf);
 }
