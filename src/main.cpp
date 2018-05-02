@@ -71,6 +71,7 @@ std::vector<std::string> get_input_paths(char* input_path){
   return init_seeds;
 }
 
+
 void print_wait_status(int status){
   if (WIFEXITED(status)) {
     std::cout << "Child exited with "<< WEXITSTATUS(status) << std::endl;
@@ -125,11 +126,12 @@ void run(config conf) {
   //or exec the child with different args
   if(conf.input_method == 's'){ 
     prepare_fork_server(server_pipe, fuzzer_pipe);
+    child_exec(conf.exec_name, child_args, stdin_pipe);
 
-    //uint32_t status, pid;
-    //int32_t msg = 0xcafebabe;
-    //read(fuzzer_pipe[0], &status, 4); // get ready signal from child
-    //assert(status == 0xdeadbeef);
+    uint32_t status, pid;
+    int32_t msg = 0xcafebabe;
+    read(fuzzer_pipe[0], &status, 4); // get ready signal from child
+    assert(status == 0xdeadbeef);
 
     for(int i = 0; i < 10; i++){
       pipe(stdin_pipe);
@@ -142,6 +144,8 @@ void run(config conf) {
       print_wait_status(status);
       trace myTrace = read_trace(trace_pipe[0]);
       schedule(rateTrace(myTrace), init_input);
+      //run child until termination
+      print_wait_status(status);
     }
   } else if(conf.input_method == 'a') {
     //generate the arg to launch the child with
