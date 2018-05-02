@@ -10,9 +10,11 @@
 int32_t status_ok = 0xdeadbeef;
 int32_t temp, pid;
 
-void start_mtrace_fork_server(){
-    write(WRITE_FD, &status_ok, 4);
-    write(TRACE_FD, &status_ok, 4);
+void start_mtrace_fork_server(void);
+
+void start_mtrace_fork_server(void){
+    int err = write(WRITE_FD, &status_ok, 4);
+    err = write(TRACE_FD, &status_ok, 4);
 
     while(1){
         int res;
@@ -27,12 +29,12 @@ void start_mtrace_fork_server(){
             close(READ_FD);
             break;
         }else {
-            write(WRITE_FD, &pid, 4);
+            err = write(WRITE_FD, &pid, 4);
             res = waitpid(pid, &temp, WUNTRACED);
             if(res <= 0) exit(1);
 
             printf("Grandchild exited\n");
-            write(WRITE_FD, &temp, 4);
+            err = write(WRITE_FD, &temp, 4);
         }
     }
 }
