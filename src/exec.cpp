@@ -88,7 +88,10 @@ pid_t child_exec(const std::string path, char *const argv[], int *stdio_pipes) {
 //We always need communication for traces
 void prepare_comm_pipes(int *trace_pipe){
   pipe(trace_pipe);
-  auto trace_write= fcntl(trace_pipe[1], F_DUPFD, 200); //fork server trace writing end at 200
+  auto trace_write = fcntl(trace_pipe[1], F_DUPFD, 200); //fork server trace writing end at 200
+  int flags = fcntl(trace_pipe[0], F_GETFL);
+  flags |= O_NONBLOCK;
+  fcntl(trace_pipe[0], F_SETFL, flags);
   close(trace_pipe[1]);
   trace_pipe[1] = trace_write;
 }
@@ -108,9 +111,5 @@ void prepare_fork_server(int *server_pipe, int *fuzzer_pipe){
   close(fuzzer_pipe[1]);
   server_pipe[0] = read_end;
   fuzzer_pipe[1] = write_end;
-
-  std::cout << server_pipe[0] << " " << server_pipe[1] << std::endl;
-  std::cout << fuzzer_pipe[0] << " " << fuzzer_pipe[1] << std::endl; 
 }
 
-      
