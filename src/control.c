@@ -36,13 +36,11 @@ void *malloc(size_t size)
     fprintf(stderr, "malloc(%zu) = ", size);
     p = real_malloc(size);
     fprintf(stderr, "%p\n", p);
-    
 
-    
     unsigned char m = 0x6d;
     write(TRACE_OUT_FD, &m, 1);
-    write(TRACE_OUT_FD, &size, 8);
-    write(TRACE_OUT_FD,p,8);
+    write(TRACE_OUT_FD, &size, sizeof(size_t));
+    write(TRACE_OUT_FD, &p,sizeof(size_t));
 
     return p;
 }
@@ -60,7 +58,7 @@ void free(void* ptr)
 
     unsigned char f = 0x66;
     write(TRACE_OUT_FD, &f, 1);
-    write(TRACE_OUT_FD,ptr,8);
+    write(TRACE_OUT_FD, &ptr,sizeof(size_t));
     return;
 }
 
