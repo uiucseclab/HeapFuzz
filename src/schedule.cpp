@@ -101,6 +101,8 @@ void schedule(int num_to_schedule,std::vector<std::string> input){
 //Todo: make this good
 //currently just schedules 3 whenever we see a new malloc or free call
 int rateTrace(trace myTrace){
+	std::cout << "myTrace contents: " << myTrace[0].call_type << std::endl;
+
 	auto rating = 0;
 
 	for(auto &call : myTrace){
@@ -108,6 +110,7 @@ int rateTrace(trace myTrace){
   		auto called_from = call.called_from;
   		auto parameter = call.parameter;
   		//auto parameter2 = call.parameter2;
+
 
   		//unsigned long parameter;
   		if(call_type == (Malloc || Calloc)){
@@ -117,18 +120,21 @@ int rateTrace(trace myTrace){
   			else{
 				malloc_map[called_from]++;
 				rating += 3;
-
+				std::cerr << "Error on Malloc\n"; 
   			}
   		}
   		else if(call_type == Free){
   			if(malloc_map.find( called_from ) == malloc_map.end()){
   				malloc_map[called_from] = -1; //flag?
   				rating += 3;
+  				std::cerr << "Error: Freeing a non-existant block\n" << std::endl;
   			}
   			else{
-  				if(malloc_map[called_from] == 0)
+  				if(malloc_map[called_from] == 0){
   					rating += 3;
-				malloc_map[called_from]--;
+  					std::cerr << "Error: Double free\n" << std::endl;
+  				}
+				malloc_map[called_from] = 0;
   			}
   		}
   		else if(call_type == Realloc){
@@ -140,6 +146,7 @@ int rateTrace(trace myTrace){
   				else{
   					malloc_map[parameter] = -1;
   					rating += 3;
+  					std::cerr << "Error: reallocating a non-existant block\n";
   				}
   			}
   			else{
@@ -148,7 +155,8 @@ int rateTrace(trace myTrace){
   			}
   		}
   	}
-	
+
+	std::cout << "Rate trace rating: " << rating << std::endl;
 	return rating;
 }
 
