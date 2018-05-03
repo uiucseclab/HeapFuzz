@@ -1,10 +1,13 @@
 #include "schedule.hpp"
 #include "exec.hpp"
+#include <iostream>
+#include <fstream>
+#include <string>
 
 std::mt19937 seed(12345);
 std::map<address,unsigned int> malloc_map;
 std::queue<std::string> scheduler;
-
+unsigned seed_count = 0;
 
 //Maps call address of mallocs to number it has been called
 //std::map<address,unsigned int> free_map;
@@ -47,12 +50,40 @@ std::string mutate(std::string input){
 	
 }
 
+std::string get_new_seed(std::string seed){
+	std::string mutated_seed = mutate(seed);
+	std::string seed_name = std::to_string(seed_count++);
+	std::ofstream out(seed_name);
+    out << mutated_seed;
+    out.close();
+    return seed_name;
+}
+
+
+
+void schedule_file_init(int num_to_schedule,std::vector<std::string> input){
+	for (auto i = 0; i < num_to_schedule; i++)
+	{
+		//std::string new_seed = get_new_seed(input);
+		scheduler.push(input[i]);
+	}
+
+}
+
+void schedule_file(int num_to_schedule,std::string input){
+	for (auto i = 0; i < num_to_schedule; i++)
+	{
+		std::string new_seed = get_new_seed(input);
+		scheduler.push(new_seed);
+	}
+
+}
 
 //mutate string n times and add them to queue
 void schedule(int num_to_schedule,std::vector<std::string> input){
 
-	for(auto i =0; i < (int)input.size(); i++)
-		scheduler.push(input[i]);
+	//for(auto i =0; i < (int)input.size(); i++)
+	//	scheduler.push(input[i]);
 	for (auto i = 0; i < num_to_schedule; i++)
 	{
 		scheduler.push(mutate(input[i]));

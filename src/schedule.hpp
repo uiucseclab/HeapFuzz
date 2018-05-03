@@ -26,6 +26,6 @@ std::string get_next();
 std::string mutate(std::string input);
 void schedule(int num_to_schedule, std::vector<std::string> input);
 int rateTrace(trace myTrace);
-
-
+void schedule_file(int num_to_schedule,std::string input);
+void schedule_file_init(int num_to_schedule,std::vector<std::string> input);
 #endif //SCHEDULE_H
