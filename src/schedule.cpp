@@ -38,7 +38,7 @@ std::string mutate(std::string input){
 			input += (rand_char(seed) + rand_char(seed) + rand_char(seed));
 		}
 		else {
-			if(input.length() > 3){
+			if(input.length() > 6){
 				input.pop_back();
 				input.pop_back();
 				input.pop_back();
