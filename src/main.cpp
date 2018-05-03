@@ -153,7 +153,7 @@ void run_file(config conf){
    
 
 
-    for(int i = 0; i < 10000; i++){
+    for(int i = 0; i < 1000; i++){
       //print out loop iteration for debugging purposes
       std::cout << i << std::endl;
 
@@ -163,23 +163,28 @@ void run_file(config conf){
       //std::cout << "We returned from child exec" << std::endl;
       read(fuzzer_pipe[0], &status, 4); // get ready signal from child
       assert(status == (int)0xdeadbeef);
+      
       auto in_file_name = get_next();
+      assert(!in_file_name.empty());
+
       //std::cout << in_file_name << std::endl;
 
       auto last_seed = file_to_seed("in/curr_seed");
       
+
       rename(in_file_name.c_str(),seed_path);
       //write(stdin_pipe[1], in.c_str(), in.size()+1);
       close(stdin_pipe[1]); //We have to close this so the target doesn't hang, but we can't reopen it either...
       //std::cout << "waiting on wait status" << std::endl;
      // waitpid(pid, &status, WUNTRACED);
-      print_wait_status(status);
+      //print_wait_status(status);
       //std::cout << "still waiting on wait status" << std::endl;
 
       trace myTrace = read_trace(trace_pipe[0]);
 
 
-      schedule_file(rateTrace(myTrace), last_seed);
+      //schedule_file(rateTrace(myTrace), last_seed);
+      schedule_file(1,last_seed);
       //run child until termination
       print_wait_status(status);
       std::cout << "end" << std::endl;

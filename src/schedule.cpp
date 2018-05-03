@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cassert>
 
 std::mt19937 seed(12345);
 std::map<address,unsigned int> malloc_map;
@@ -12,6 +13,7 @@ unsigned seed_count = 0;
 //Maps call address of mallocs to number it has been called
 //std::map<address,unsigned int> free_map;
 std::string get_next(){
+  assert(!scheduler.empty());
   auto r = scheduler.front();
   scheduler.pop();
   return r;
@@ -25,6 +27,9 @@ std::string mutate(std::string input){
 	std::uniform_int_distribution<int> len_change_choice(1, 2);
 	std::uniform_int_distribution<int> rand_char(0, 255);
 
+	//auto a = &input[0];
+
+	assert(!input.empty());
 	//for(int i =0; i<10; i++)
 	//	std::cout << "rand val is: " << rand_char(seed) << std::endl;
 	auto num_mutations = 3;
@@ -46,6 +51,7 @@ std::string mutate(std::string input){
 			}
 		}
 	}
+	//assert(a == &input[0]);
 	return input;
 	
 }
