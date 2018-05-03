@@ -210,7 +210,7 @@ void run(config conf) {
 
   //So now we can either use the fork server and pass stdin
   //or exec the child with different args
-   if(conf.input_method == 's'){ 
+  if(conf.input_method == 's'){ 
     prepare_fork_server(server_pipe, fuzzer_pipe);
 
     for(int i = 0; i < 10; i++){
@@ -223,7 +223,7 @@ void run(config conf) {
       waitpid(pid, &status, WUNTRACED);
       print_wait_status(status);
       trace myTrace = read_trace(trace_pipe[0]);
-      schedule(rateTrace(myTrace), init_input);
+      schedule(1, init_input);
     }
   } else if(conf.input_method == 'a') {
     //generate the arg to launch the child with
@@ -246,7 +246,7 @@ void run(config conf) {
       waitpid(pid, &status, WUNTRACED);
       print_wait_status(status);
       trace myTrace = read_trace(trace_pipe[0]);
-      schedule(rateTrace(myTrace), init_input);
+      schedule(1, init_input);
     }
   }
 }

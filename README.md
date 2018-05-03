@@ -9,6 +9,7 @@ Angora: https://arxiv.org/pdf/1803.01307.pdf
 # Features
 - Fork server to reduce overhead of spawning new processes
 - Memory allocation and free traces
+- Fuzzing stdin, command-line arguments, and file inputs
 - Detecting heap errors such as 
   - Double frees
   - Overlapping chunks
@@ -21,6 +22,17 @@ The binary is compiled with an extra ~20 line shim (src/shim.h) that causes the 
 This means that the each instance of the binary we spawn uses the kernel's Copy-on-Write for forked processes, speeding up the time to spawn a new process.
 The binary is launched with LDPRELOAD in order to trace heap functions.
 An input scheduler generates inputs and then looks at whether there was interesting behaviour as a result. Based on the behaviour we can queue a varying number of new inputs based on the originating input.
+
+# Usage
+Run ```make all``` from the root of the repo.
+```
+Usage: bin/fuzzer <Type> <Exec Path> [Args]
+Where Type is :	 a 	 Fuzz arguments
+               	 s 	 Fuzz stdin
+               	 f 	 Fuzz file input
+```
+We have compiled cat and xxd from coreutils with our forkserver shim to prove that it works for file-fuzzing.
+Some example runs would be ```bin/fuzzer a /bin/echo``` to fuzz arguments, ```bin/fuzzer s /bin/cat/``` to fuzz stdin and ```bin/fuzzer f ./cat``` to do file fuzzing on our recompiled version of cat.
 
 # Development History
 This is a short timeline of things we tried.
@@ -47,3 +59,11 @@ In order to hook on malloc/calloc/realloc/free we compile a shared library objec
 ### Tracing Memory
 At this point we can trace heap allocations and frees. We can follow those traces to determine if an application is doing something wrong.
 
+### Handling File Inputs
+For binaries that operate on files, we start them using the fork server and between runs we swap out the file that is read in by the program.
+This lets us test for errors in programs that allocate memory based on file inputs.
+
+# Authors
+enjhnsn2
+chlopec2
+ljhsiun2
