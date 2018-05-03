@@ -205,16 +205,10 @@ void run(config conf) {
 
   //So now we can either use the fork server and pass stdin
   //or exec the child with different args
-  if(conf.input_method == 's'){ 
+   if(conf.input_method == 's'){ 
     prepare_fork_server(server_pipe, fuzzer_pipe);
-    child_exec(conf.exec_name, child_args, stdin_pipe);
 
-    //uint32_t pid;
-    //int32_t msg = 0xcafebabe;
-    read(fuzzer_pipe[0], &status, 4); // get ready signal from child
-    //assert(status == 0xdeadbeef);
-
-    for(int i = 0; i < 10000; i++){
+    for(int i = 0; i < 10; i++){
       pipe(stdin_pipe);
       auto pid = child_exec(conf.exec_name, child_args, stdin_pipe);
       auto in = get_next();
@@ -225,26 +219,30 @@ void run(config conf) {
       print_wait_status(status);
       trace myTrace = read_trace(trace_pipe[0]);
       schedule(rateTrace(myTrace), init_input);
-      //run child until termination
-      print_wait_status(status);
     }
   } else if(conf.input_method == 'a') {
     //generate the arg to launch the child with
     //launch the child and wait on it
-    auto in = get_next();
-    auto copy = (char*)malloc(in.size()+1);
-    strcpy(copy, in.c_str());
-    conf.args.insert(conf.args.end()-2, copy);
-    auto pid = child_exec(conf.exec_name, child_args, stdin_pipe);
-    close(stdin_pipe[1]);
-    conf.args.erase(conf.args.end()-2);
-    //get its trace
-    //read/epoll
-    waitpid(pid, &status, WUNTRACED);
-    print_wait_status(status);
-    trace myTrace = read_trace(trace_pipe[0]);
-    schedule(rateTrace(myTrace), init_input);
-    //repeat
+    for(int i = 0; i < 10;  i++){
+      char* terminator = {0};
+      auto in = get_next();
+      auto copy = (char*)malloc(in.size()+1);
+      strcpy(copy, in.c_str());
+
+      conf.args.pop_back(); // remove the terminator
+      conf.args.push_back(copy);
+      conf.args.push_back(terminator);
+      auto pid = child_exec(conf.exec_name, &conf.args[0], stdin_pipe);
+      close(stdin_pipe[1]);
+      conf.args.erase(conf.args.end()-2);
+
+      //get its trace
+      //read/epoll
+      waitpid(pid, &status, WUNTRACED);
+      print_wait_status(status);
+      trace myTrace = read_trace(trace_pipe[0]);
+      schedule(rateTrace(myTrace), init_input);
+    }
   }
 }
 
@@ -268,5 +266,14 @@ int main(int argc, char *argv[]) {
   config conf = {name, std::vector<char*>(argv+2, argv+argc), fuzz_type};
   if(conf.input_method == 'f') {run_file(conf);}
   else {run(conf);}
+  
   std::cout << "Totally done!" << std::endl;
+  /*
+  char* terminator = {0};
+  std::vector<char*> args = std::vector<char*>(argv+2, argv+argc);
+  args.push_back(terminator);
+  config conf = {name, args, fuzz_type};
+
+  run(conf);
+  */
 }
