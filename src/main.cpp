@@ -223,6 +223,7 @@ void run(config conf) {
       waitpid(pid, &status, WUNTRACED);
       print_wait_status(status);
       trace myTrace = read_trace(trace_pipe[0]);
+
       schedule(rateTrace(myTrace), init_input);
     }
   } else if(conf.input_method == 'a') {
