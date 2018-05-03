@@ -110,8 +110,7 @@ int rateTrace(trace myTrace){
   		auto called_from = call.called_from;
   		auto parameter = call.parameter;
   		//auto parameter2 = call.parameter2;
-  		std::cout << "parameter: " << parameter  << std::endl;
-  		std::cout << "address: " << called_from << std::endl;
+
 
   		//unsigned long parameter;
   		if(call_type == (Malloc || Calloc)){
